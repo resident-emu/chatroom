@@ -4,6 +4,8 @@ let current_roomid = 16;
 let message_count = 1;
 let current_username = "anon";
 
+Notification.requestPermission();
+
 // Disable logout buttons initially
 document.getElementById("logout_button").style = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
 document.getElementById("CR_logout_button").style = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
@@ -104,6 +106,12 @@ function add_foreign_message(message, sender = "SYS") {
 
     message_count++;
     console.log({ Sender: sender, message, timestamp: timeStr });
+
+    if (Notification.permission === "granted") {
+        new Notification("new message from: " + sender, {
+            body: message,
+        });
+    }
 }
 
 function clear_messages() {
