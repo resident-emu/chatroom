@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="CR-Style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <title>Cr</title>
+</head>
+<body>
+    <div class="container" id="top_bar">
+    <div id="user_login_container">
+        <input class="login" type="text" id="inputed_username" placeholder="Username"><br>
+        <input class="login" type="password" placeholder="Password">
+        <div class="ll_buttons_container">
+            <div class="ll_buttons" id="login_button">user login</div>
+            <div class="ll_buttons" id="logout_button">user logout</div>
+        </div>
+    </div>
+    <div id="chatroom_login_container">
+        <input type="text" class="login" placeholder="chatroom name"><br>
+        <input type="password" class="login" placeholder="chatroom password">
+        <div class="ll_buttons_container">
+            <div class="ll_buttons" id="CR_login_button">chatroom enter</div>
+            <div class="ll_buttons" id="CR_logout_button">chatroom exit</div>
+        </div>
+    </div>
+    <!-- info  -->
+     <div id="info_container">
+        <div id="status">status : <span id="status_value">Not connected</span></div>
+        <div id="roomid">room_id : --</div>
+        <div id="username">Username : anon</div>
+     </div>
+    </div>
+
+    <div class="container" id="chatroom">
+       <div id="user_messages">
+        <!-- User messages here! -->
+
+        <div class="foreign_message_container" id="foreign_message_container1">
+            <div class="sender" id="sender">SYS</div>
+            <div class="message" id="message">This is a system test message</div>
+            <div class="timestamp" id="timestamp">00:00</div>
+        </div>
+
+       </div>
+        <div id="input_container">
+            <input class="input" id="input_message" type="text" placeholder="...">
+            <div class="input" id="send"><!--&#8702;-->&#129191;</div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="CR-Script.js"></script>
+</html>
