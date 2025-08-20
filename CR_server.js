@@ -10,6 +10,7 @@ let clients = [];
 let nextClientId = 1;
 
 wss.on('connection', (ws) => {
+
     if (clients.length === 0) {
         nextClientId = 1;
     }
@@ -23,34 +24,24 @@ wss.on('connection', (ws) => {
         if (typeof parsed.roomid !== "undefined") {
             ws.roomid = parsed.roomid;
         }
-        if (parsed.token == "null") {
-            return 0;
-        }
-        else {
-            jwt.verify(parsed.token, "your_secret_key", (err, decoded) => {
-                if (err) {
-                    console.log("Token verification failed");
-                    return 0;
-                }
-                let response = JSON.stringify({
-                    text: parsed.text,
-                    sender: parsed.sender || "anon",
-                    id: ws.id,
-                    roomid: ws.roomid
-                });
-                for (let client of clients) {
-                    if (client !== ws && client.readyState === WebSocket.OPEN && client.roomid == ws.roomid) {
-                        client.send(response);
-                    }
-                }
+            let response = JSON.stringify({
+                text: parsed.text,
+                sender: parsed.sender || "guest",
+                id: ws.id,
+                roomid: ws.roomid
             });
-        }
-    });
+            for (let client of clients) {
+                if (client !== ws && client.readyState === WebSocket.OPEN && client.roomid == ws.roomid) {
+                    client.send(response);
+                }
+            }
+        });
     ws.on('close', () => {
         clients = clients.filter(client => client !== ws);
         console.log(`${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')} : Client with id ${ws.id} disconnected`);
     });
-});
+    });
+
 setInterval(() => {
     clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
