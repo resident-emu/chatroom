@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json());
 
 app.use(session({
-  secret: '$2b$12$Y.kXfcKdA6Fhh2E5dEes6.NiCllGRUaOkKSlSgAxSpF3rLq4bRBqe',
+  secret: '',
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -47,4 +47,5 @@ app.post("/login", async (req, res) => {
 //send sessionid to websocket server for storage and validation
 app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");
+
 });
