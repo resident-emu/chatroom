@@ -6,7 +6,7 @@ let current_username = "anon";
 Notification.requestPermission();
 
 if (localStorage["token"] !== null) {
-    fetch("http://localhost:3000/protected", {
+    fetch("http://xxx.xxx.xxx.xxx:3000/protected", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -17,6 +17,11 @@ if (localStorage["token"] !== null) {
   .then(data => {
     current_username = data.user.username;
     document.getElementById("username").innerText = "Username : " + data.user.username;
+    document.getElementById("login_button").disabled = true;
+    document.getElementById("login_button").style = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
+    document.getElementById("logout_button").style = "pointer-events: auto; opacity: 1; cursor: auto;";
+    document.getElementById("logout_button").disabled = false;
+
   })
   .catch(error => {
     console.error("Error:", error);
@@ -36,9 +41,11 @@ function parseJwt (token) {
     return JSON.parse(jsonPayload);
 }
 
+// Disable logout buttons initially
 document.getElementById("logout_button").style = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
 document.getElementById("CR_logout_button").style = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
 
+// Display current room
 document.getElementById("roomid").innerHTML = "room_id : " + current_roomid;
 
 // --- WebSocket Handlers ---
@@ -134,7 +141,7 @@ function add_foreign_message(message, sender = "SYS") {
 
     message_count++;
     console.log({ Sender: sender, message, timestamp: timeStr });
-    if (Notification.permission === "granted" && document.visibilityState === 'hidden') {
+    if (Notification.permission === 'granted' && document.visibilityState === 'hidden') {
         new Notification("new message from: " + sender, {
             body: message,
         });
@@ -179,7 +186,7 @@ document.getElementById("login_button").addEventListener("click", () => {
     let passwordInput = document.getElementById("inputed_password").value.trim();
     current_username = usernameInput || "anon";
 
-    const login_request = fetch("http://localhost:3000/login", {
+    const login_request = fetch("http://xxx.xxx.xxx.xxx:3000/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -214,6 +221,17 @@ document.getElementById("login_button").addEventListener("click", () => {
     .catch(error => {
         console.error(error);
     });
+});
+
+document.getElementById("logout_button").addEventListener("click", () => {
+    localStorage.removeItem("token");
+    current_username = "anon";
+    document.getElementById("username").innerText = "Username : " + current_username;
+
+    document.getElementById("login_button").disabled = false;
+    document.getElementById("logout_button").disabled = true;
+    document.getElementById("logout_button").style = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
+    document.getElementById("login_button").style = "pointer-events: all; opacity: 1; cursor: pointer;";
 });
 
 // Login to a chatroom
