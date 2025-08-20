@@ -23,16 +23,27 @@ wss.on('connection', (ws) => {
         if (typeof parsed.roomid !== "undefined") {
             ws.roomid = parsed.roomid;
         }
-        let response = JSON.stringify({
-            text: parsed.text,
-            sender: parsed.sender || "anon",
-            id: ws.id,
-            roomid: ws.roomid
-        });
-            for (let client of clients) {
-            if (client !== ws && client.readyState === WebSocket.OPEN && client.roomid == ws.roomid) {
-                client.send(response);
-            }
+        if (parsed.token == "null") {
+            return 0;
+        }
+        else {
+            jwt.verify(parsed.token, "your_secret_key", (err, decoded) => {
+                if (err) {
+                    console.log("Token verification failed");
+                    return 0;
+                }
+                let response = JSON.stringify({
+                    text: parsed.text,
+                    sender: parsed.sender || "anon",
+                    id: ws.id,
+                    roomid: ws.roomid
+                });
+                for (let client of clients) {
+                    if (client !== ws && client.readyState === WebSocket.OPEN && client.roomid == ws.roomid) {
+                        client.send(response);
+                    }
+                }
+            });
         }
     });
     ws.on('close', () => {
