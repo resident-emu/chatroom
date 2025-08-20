@@ -1,7 +1,7 @@
 let ws = new WebSocket("ws://xxx.xxx.xxx.xxx:8080");
 let current_roomid = 16;
 let message_count = 1;
-let current_username = "anon";
+let current_username = "guest";
 
 Notification.requestPermission();
 
@@ -184,7 +184,7 @@ document.getElementById("input_message").addEventListener("keydown", (event) => 
 document.getElementById("login_button").addEventListener("click", () => {
     let usernameInput = document.getElementById("inputed_username").value.trim();
     let passwordInput = document.getElementById("inputed_password").value.trim();
-    current_username = usernameInput || "anon";
+    current_username = usernameInput || "guest";
 
     const login_request = fetch("http://xxx.xxx.xxx.xxx:3000/login", {
         method: "POST",
@@ -225,7 +225,7 @@ document.getElementById("login_button").addEventListener("click", () => {
 
 document.getElementById("logout_button").addEventListener("click", () => {
     localStorage.removeItem("token");
-    current_username = "anon";
+    current_username = "guest";
     document.getElementById("username").innerText = "Username : " + current_username;
 
     document.getElementById("login_button").disabled = false;
@@ -243,7 +243,7 @@ document.getElementById("CR_login_button").addEventListener("click", () => {
     document.getElementById("roomid").innerHTML = "room_id : " + current_roomid;
 
     if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ text: "", sender: "anon", roomid: current_roomid, token: localStorage.getItem("token") }));
+        ws.send(JSON.stringify({ text: "", sender: "guest", roomid: current_roomid, token: localStorage.getItem("token") }));
     }
 });
 
