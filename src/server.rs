@@ -1,10 +1,6 @@
 pub mod sockets {
     use std::{
-        collections::HashMap,
-        env,
-        io::Error as IoError,
-        net::SocketAddr,
-        sync::Arc,
+        collections::HashMap, env, io::Error as IoError, net::SocketAddr, str::FromStr, sync::{atomic::{AtomicU32, Ordering}, Arc}
     };
 
     use futures_channel::mpsc::{unbounded, UnboundedSender};
@@ -19,6 +15,23 @@ pub mod sockets {
     type Tx = UnboundedSender<Message>;
     type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
 
+    enum Visitor {
+        Guest(String),
+        User(User),
+    }
+    struct User {
+        name: String,
+        password: String,
+        token: Option<String>,
+    }
+    struct Client {
+        id: u32,
+        roomid: u32,
+        user: Visitor,
+    }
+
+    static USER_ID: AtomicU32 = AtomicU32::new(1);
+
     async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: SocketAddr) {
         println!("Incoming connection from: {}", addr);
 
@@ -30,6 +43,13 @@ pub mod sockets {
             }
         };
         println!("Connection established: {}", addr);
+
+        let user_id = USER_ID.fetch_add(1, Ordering::SeqCst);
+        let client = Client {
+            id: user_id,
+            roomid: 16,
+            user: Visitor::Guest(String::from("Anon")),
+        };
 
         let (tx, rx) = unbounded::<Message>();
 
