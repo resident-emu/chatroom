@@ -82,16 +82,61 @@ pub mod sockets {
                     return Ok(());
                 }
 
-                let recipients = {
+                let text_opt = msg.clone().into_text().ok();
+
+                let mut recipients: Vec<(u32, Tx)> = Vec::new();
+                let mut sender_room = String::new();
+
+                if let Some(text) = text_opt.as_ref() {
+                    if let Ok(message) = serde_json::from_str::<Value>(text) {
+                        let mut guard = reader_clients.lock().await;
+
+                        if let Some(room_str) = message["roomid"].as_str() {
+                            if let Some((client_entry, _)) = guard.get_mut(&client_id) {
+                                client_entry.roomid = room_str.to_string();
+                            }
+                        }
+
+                        if let Some((client_entry, _)) = guard.get(&client_id) {
+                            sender_room = client_entry.roomid.clone();
+                        } else {
+                            sender_room = String::from("16");
+                        }
+
+                        for (cid, (c, sink)) in guard.iter() {
+                            if *cid != client_id && c.roomid == sender_room {
+                                recipients.push((*cid, sink.clone()));
+                            }
+                        }
+
+                        println!("Received from {}: {:?}", client_id, message);
+                    } else {
+                        let guard = reader_clients.lock().await;
+                        if let Some((client_entry, _)) = guard.get(&client_id) {
+                            sender_room = client_entry.roomid.clone();
+                        } else {
+                            sender_room = String::from("16");
+                        }
+                        for (cid, (c, sink)) in guard.iter() {
+                            if *cid != client_id && c.roomid == sender_room {
+                                recipients.push((*cid, sink.clone()));
+                            }
+                        }
+                        println!("What the fuck are you doing {}: {}", client_id, text);
+                    }
+                } else {
                     let guard = reader_clients.lock().await;
-                    let mut list = Vec::with_capacity(guard.len());
-                    for (cid, (_client, sink)) in guard.iter() {
-                        if *cid != client_id {
-                            list.push((*cid, sink.clone()));
+                    if let Some((client_entry, _)) = guard.get(&client_id) {
+                        sender_room = client_entry.roomid.clone();
+                    } else {
+                        sender_room = String::from("16");
+                    }
+                    for (cid, (c, sink)) in guard.iter() {
+                        if *cid != client_id && c.roomid == sender_room {
+                            recipients.push((*cid, sink.clone()));
                         }
                     }
-                    list
-                };
+                }
 
                 let mut to_remove: Vec<u32> = Vec::new();
                 for (cid, sink) in recipients {
@@ -105,21 +150,7 @@ pub mod sockets {
                     let mut guard = reader_clients.lock().await;
                     for dead in to_remove {
                         guard.remove(&dead);
-                        println!("{} disconnected", dead);
-                    }
-                }
-
-                if let Ok(text) = msg.clone().into_text() {
-                    if let Ok(message) = serde_json::from_str::<Value>(&text) {
-                        if let Some(room_str) = message["roomid"].as_str() {
-                            let mut guard = reader_clients.lock().await;
-                            if let Some((client_entry, _)) = guard.get_mut(&client_id) {
-                                client_entry.roomid = room_str.to_string();
-                            }
-                        }
-                        println!("Message from {}: {:?}", client_id, message);
-                    } else {
-                        println!("What the fuck are you doing {}: {}", client_id, text);
+                        println!("Removed dead client {}", dead);
                     }
                 }
 
