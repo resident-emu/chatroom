@@ -156,3 +156,7 @@ body
 {
     border-right: 2px double black;
 }
+#status span 
+{
+    color: red; 
+}
