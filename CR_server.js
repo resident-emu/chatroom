@@ -6,7 +6,7 @@ const cors = require('cors');
 
 const wss = new WebSocket.Server({ port: 8080});
 let clients = [];
-console.log(bcrypt.hashSync("1324", 12));
+
 let nextClientId = 1;
 
 wss.on('connection', (ws) => {
@@ -93,3 +93,4 @@ app.get('/protected', (req, res) => {
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
 });
+
