@@ -9,17 +9,17 @@ const wss = new WebSocket.Server({ port: 8080});
 let clients = [];
 
 let con = mysql.createConnection({
-  host: "dbip", //if not in ip:port form. port not needed
+  host: "dbip", // if not using format ip:port only host needed
   port: dbport,
   user: "dbuser",
-  password: "dbpassowrd",
-  database: "yourdb"
+  password: "dbuser",
+  database: "db"
 });
 
 con.connect(function(err) {
     if (err) throw err;
     console.log("Database connected");
-    
+
 let nextClientId = 1;
 
 wss.on('connection', (ws) => {
@@ -38,9 +38,12 @@ wss.on('connection', (ws) => {
             ws.roomid = parsed.roomid;
         }
 
-        if (!users.some(u => u.username === parsed.sender)) {
+    con.query(
+        "SELECT * FROM users WHERE name = ?",[parsed.sender],(err, result) => {
+        if (err) throw err;
+        if (result.length === 0) {
             parsed.sender = "guest";
-        } 
+        }});
 
             let response = JSON.stringify({
                 text: parsed.text,
@@ -74,7 +77,7 @@ const app = express();
 
 app.use(express.json());
 app.use(cors({origin: '*'}));
-const SECRET_KEY = "your_secret_key"; //don't use "your_secret_key"
+const SECRET_KEY = "your_secret_key"; // DO NOT USE "your_secret_key"
 
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
