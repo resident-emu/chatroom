@@ -1,4 +1,4 @@
-let ws = new WebSocket("ws://xxx.xxx.xxx.xxx:8080");
+let ws = new WebSocket("ws://10.68.145.99:8080");
 let current_roomid = 16;
 let message_count = 1;
 let current_username = "guest";
@@ -6,7 +6,7 @@ let current_username = "guest";
 Notification.requestPermission();
 
 if (localStorage["token"] !== null) {
-    fetch("http://xxx.xxx.xxx.xxx:3000/protected", {
+    fetch("http://10.68.145.99:3000/protected", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -141,7 +141,7 @@ function add_foreign_message(message, sender = "SYS") {
 
     message_count++;
     console.log({ Sender: sender, message, timestamp: timeStr });
-    if (Notification.permission === 'granted' && document.visibilityState === 'hidden') {
+    if (Notification.permission === 'granted') {
         new Notification("new message from: " + sender, {
             body: message,
         });
@@ -184,9 +184,8 @@ document.getElementById("input_message").addEventListener("keydown", (event) => 
 document.getElementById("login_button").addEventListener("click", () => {
     let usernameInput = document.getElementById("inputed_username").value.trim();
     let passwordInput = document.getElementById("inputed_password").value.trim();
-    current_username = usernameInput || "guest";
 
-    const login_request = fetch("http://xxx.xxx.xxx.xxx:3000/login", {
+    const login_request = fetch("http://10.68.145.99:3000/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -214,6 +213,7 @@ document.getElementById("login_button").addEventListener("click", () => {
         document.getElementById("login_button").style = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
 
         document.getElementById("username").innerText = "Username : " + usernameInput;
+        current_username = usernameInput;
         if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ text: "", sender: current_username, roomid: current_roomid, token: localStorage["token"] }));
         }
@@ -250,7 +250,7 @@ document.getElementById("CR_login_button").addEventListener("click", () => {
 
 function connect() {
     if (ws.readyState === WebSocket.OPEN) ws.close();
-    ws = new WebSocket("ws://xxx.xxx.xxx.xxx:8080");
+    ws = new WebSocket("ws://10.68.145.99:8080");
 
     ws.onopen = () => {
         console.log("WebSocket connection established.");
