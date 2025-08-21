@@ -6,7 +6,7 @@ const cors = require('cors');
 
 const wss = new WebSocket.Server({ port: 8080});
 let clients = [];
-
+console.log(bcrypt.hashSync("1324", 12));
 let nextClientId = 1;
 
 wss.on('connection', (ws) => {
@@ -59,7 +59,7 @@ setInterval(() => {
 
 const app = express();
 
-const users = [{username: "admin", password: "$2b$12$mG.qkW8CqUUt7taY5BH4weOmuHY1smFXFY3EGjxls699EIZespALa", token: null}, {username: "Arvid", password: "$2b$12$.sXKARkEPAOuCDQBwBQgWOBG5yWos5yCEGlaCXWC9EurTEdE4nsE6", token: null}, {username: "Stefan", password: bcrypt.hashSync("1234", 12), token: null}]; //admin : password
+const users = [{username: "admin", password: "$2b$12$mG.qkW8CqUUt7taY5BH4weOmuHY1smFXFY3EGjxls699EIZespALa", token: null}, {username: "Arvid", password: "$2b$12$L7yBP7kntXajmMI8nL7MB.OR5iSfNIwjWFFfGBtoS48Y0MEXijXZy", token: null}, {username: "Stefan", password: "$2b$12$.sXKARkEPAOuCDQBwBQgWOBG5yWos5yCEGlaCXWC9EurTEdE4nsE6", token: null}]; //admin : password
 
 app.use(express.json());
 app.use(cors({origin: '*'}));
