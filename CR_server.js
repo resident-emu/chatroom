@@ -24,6 +24,11 @@ wss.on('connection', (ws) => {
         if (typeof parsed.roomid !== "undefined") {
             ws.roomid = parsed.roomid;
         }
+
+        if (!users.some(u => u.username === parsed.sender)) {
+            parsed.sender = "guest";
+        } 
+
             let response = JSON.stringify({
                 text: parsed.text,
                 sender: parsed.sender || "guest",
@@ -54,7 +59,7 @@ setInterval(() => {
 
 const app = express();
 
-const users = [{username: "admin", password: "$2b$12$mG.qkW8CqUUt7taY5BH4weOmuHY1smFXFY3EGjxls699EIZespALa", token: null}, {username: "Arvid", password: bcrypt.hashSync("1234", 12), token: null}]; //admin : password
+const users = [{username: "admin", password: "$2b$12$mG.qkW8CqUUt7taY5BH4weOmuHY1smFXFY3EGjxls699EIZespALa", token: null}, {username: "Arvid", password: "$2b$12$.sXKARkEPAOuCDQBwBQgWOBG5yWos5yCEGlaCXWC9EurTEdE4nsE6", token: null}, {username: "Stefan", password: bcrypt.hashSync("1234", 12), token: null}]; //admin : password
 
 app.use(express.json());
 app.use(cors({origin: '*'}));
