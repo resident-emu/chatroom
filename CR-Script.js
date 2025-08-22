@@ -2,6 +2,14 @@ let ws = new WebSocket("ws://xxx.xxx.xxx.xxx:8080");
 let current_roomid = "16";
 let message_count = 1;
 let current_username = "guest";
+let emojimap = null;
+
+fetch("./EmojisMap.json")
+  .then(res => res.json())
+  .then(data => {
+    emojimap = data;
+  });
+
 
 Notification.requestPermission();
 
@@ -72,6 +80,15 @@ ws.onclose = function () {
 };
 
 // --- Message Functions ---
+
+function ConvertToEmoji(text) {
+  if (!emojimap) {
+    console.warn("Emojis not loaded yet!");
+    return text;
+  }
+  return text.replace(/:\w+(?:-\w+)*:/g, match => emojimap[match] || match);
+}
+
 function add_message(message, sender = current_username) {
     if (!message) return;
     if (message.length > 1000) {
@@ -99,7 +116,7 @@ function add_message(message, sender = current_username) {
         img.style.maxHeight = "200px";
         messageDiv.appendChild(img);
     } else {
-        messageDiv.innerText = message;
+        messageDiv.innerText = ConvertToEmoji(message);
     }
 
     let timestampDiv = document.createElement("div");
@@ -142,7 +159,7 @@ function add_foreign_message(message, sender = "SYS") {
         img.style.maxHeight = "200px";
         messageDiv.appendChild(img);
     } else {
-        messageDiv.innerText = message;
+        messageDiv.innerText = ConvertToEmoji(message);
     }
 
     let timestampDiv = document.createElement("div");
@@ -270,7 +287,7 @@ document.getElementById("CR_login_button").addEventListener("click", () => {
 
 function connect() {
     if (ws.readyState === WebSocket.OPEN) ws.close();
-    ws = new WebSocket("ws://10.68.144.125:8080");
+    ws = new WebSocket("ws://xxx.xxx.xxx.xxx:8080");
 
     ws.onopen = () => {
         console.log("WebSocket connection established.");
