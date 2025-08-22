@@ -1,12 +1,12 @@
-let ws = new WebSocket("ws://10.68.145.99:8080");
-let current_roomid = 16;
+let ws = new WebSocket("ws://xxx.xxx.xxx.xxx:8080");
+let current_roomid = "16";
 let message_count = 1;
 let current_username = "guest";
 
 Notification.requestPermission();
 
 if (localStorage["token"] !== null) {
-    fetch("http://10.68.145.99:3000/protected", {
+    fetch("http://xxx.xxx.xxx.xxx:3000/protected", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -46,7 +46,7 @@ document.getElementById("logout_button").style = "pointer-events: none; opacity:
 document.getElementById("CR_logout_button").style = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
 
 // Display current room
-document.getElementById("roomid").innerHTML = "room_id : " + current_roomid;
+document.getElementById("roomid").innerText = "room_id : " + current_roomid;
 
 // --- WebSocket Handlers ---
 ws.onopen = function () {
@@ -57,7 +57,7 @@ ws.onopen = function () {
     if (ws.readyState === WebSocket.OPEN) {
         //ws.send(JSON.stringify({ text: "", sender: current_username, roomid: current_roomid, token: localStorage["token"] }));
     }
-    document.getElementById("roomid").innerHTML = "room_id : " + current_roomid;
+    document.getElementById("roomid").innerText = "room_id : " + current_roomid;
 };
 
 ws.onmessage = function (event) {
@@ -68,7 +68,7 @@ ws.onmessage = function (event) {
 ws.onclose = function () {
     document.getElementById("status_value").innerText = "Not connected";
     document.getElementById("status_value").style.color = "red";
-    document.getElementById("roomid").innerHTML = "room_id : --";
+    document.getElementById("roomid").innerText = "room_id : --";
 };
 
 // --- Message Functions ---
@@ -91,7 +91,16 @@ function add_message(message, sender = current_username) {
 
     let messageDiv = document.createElement("div");
     messageDiv.className = "message";
-    messageDiv.innerText = message;
+    if (/\.(jpeg|jpg|gif|png|webp|svg)$/i.test(message)) {
+        const img = document.createElement("img");
+        img.src = message;
+        img.alt = "shared image";
+        img.style.maxWidth = "200px";
+        img.style.maxHeight = "200px";
+        messageDiv.appendChild(img);
+    } else {
+        messageDiv.innerText = message;
+    }
 
     let timestampDiv = document.createElement("div");
     timestampDiv.className = "timestamp";
@@ -125,7 +134,16 @@ function add_foreign_message(message, sender = "SYS") {
 
     let messageDiv = document.createElement("div");
     messageDiv.className = "message";
-    messageDiv.innerText = message;
+    if (/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i.test(message)) {
+        const img = document.createElement("img");
+        img.src = message;
+        img.alt = "shared image";
+        img.style.maxWidth = "200px";
+        img.style.maxHeight = "200px";
+        messageDiv.appendChild(img);
+    } else {
+        messageDiv.innerText = message;
+    }
 
     let timestampDiv = document.createElement("div");
     timestampDiv.className = "timestamp";
@@ -149,7 +167,7 @@ function add_foreign_message(message, sender = "SYS") {
 }
 
 function clear_messages() {
-    document.getElementById("user_messages").innerHTML = "";
+    document.getElementById("user_messages").innerText = "";
     message_count = 1;
 }
 
@@ -184,8 +202,8 @@ document.getElementById("input_message").addEventListener("keydown", (event) => 
 document.getElementById("login_button").addEventListener("click", () => {
     let usernameInput = document.getElementById("inputed_username").value.trim();
     let passwordInput = document.getElementById("inputed_password").value.trim();
-
-    const login_request = fetch("http://10.68.145.99:3000/login", {
+    
+    const login_request = fetch("http://xxx.xxx.xxx.xxx:3000/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -196,13 +214,15 @@ document.getElementById("login_button").addEventListener("click", () => {
         if (response.ok) {
             return response.json();
         } else {
+            document.getElementById("inputed_username").value = "";
+            document.getElementById("inputed_password").value = "";
+            alert("login failed");
             throw new Error("Login failed");
         }
     })
     .then(data => {
         const token = data.token;
         localStorage["token"] = token;
-        console.log(token)
 
         document.getElementById("inputed_username").value = "";
         document.getElementById("inputed_password").value = "";
@@ -240,7 +260,7 @@ document.getElementById("CR_login_button").addEventListener("click", () => {
     let roomInput = document.querySelector("#chatroom_login_container input[type='text']").value.trim();
     current_roomid = roomInput || 0;
     document.querySelector("#chatroom_login_container input[type='text']").value = "";
-    document.getElementById("roomid").innerHTML = "room_id : " + current_roomid;
+    document.getElementById("roomid").innerText = "room_id : " + current_roomid;
 
     if (ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ text: "", sender: "guest", roomid: current_roomid, token: localStorage.getItem("token") }));
@@ -250,12 +270,12 @@ document.getElementById("CR_login_button").addEventListener("click", () => {
 
 function connect() {
     if (ws.readyState === WebSocket.OPEN) ws.close();
-    ws = new WebSocket("ws://10.68.145.99:8080");
+    ws = new WebSocket("ws://10.68.144.125:8080");
 
     ws.onopen = () => {
         console.log("WebSocket connection established.");
         document.getElementById("status_value").innerText = "WebSocket connected";
-        document.getElementById("roomid").innerHTML = "room_id : " + current_roomid;
+        document.getElementById("roomid").innerText = "room_id : " + current_roomid;
         document.getElementById("status_value").style.color = "green";
     };
 
