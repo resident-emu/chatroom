@@ -11,7 +11,7 @@ in
 {
   options.services.chatroom-rs = {
     enable = mkEnableOption "Enable chatroom-rs with all of it's dependencies";
-    url = {
+    url = mkOption {
       type = types.str;
       description = "Url for the reverse proxy";
     };
