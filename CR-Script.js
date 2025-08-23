@@ -1,4 +1,4 @@
-let ws = new WebSocket("ws://xxx.xxx.xxx.xxx:8080");
+let ws = new WebSocket("ws://127.0.0.1:8080");
 let current_roomid = "16";
 let message_count = 1;
 let current_username = "guest";
@@ -14,7 +14,7 @@ fetch("./EmojisMap.json")
 Notification.requestPermission();
 
 if (localStorage["token"] !== null) {
-    fetch("http://xxx.xxx.xxx.xxx:3000/protected", {
+    fetch("http://127.0.0.1:3100/protected", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -219,8 +219,8 @@ document.getElementById("input_message").addEventListener("keydown", (event) => 
 document.getElementById("login_button").addEventListener("click", () => {
     let usernameInput = document.getElementById("inputed_username").value.trim();
     let passwordInput = document.getElementById("inputed_password").value.trim();
-    
-    const login_request = fetch("http://xxx.xxx.xxx.xxx:3000/login", {
+
+    const login_request = fetch("http://127.0.0.1:3100/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
