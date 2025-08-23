@@ -39,6 +39,12 @@ in
   };
 
   config = {
+    systemd.tmpfiles.rules = [
+      "d ${cfg.dataLocation}/mysql 0770 mysql mysql - -"
+      "d ${cfg.dataLocation}/crowdsec 0770 caddy caddy - -"
+      "d ${cfg.dataLocation}/crowdsec/data 0770 caddy caddy - -"
+      "d ${cfg.dataLocation}/crowdsec/config 0770 caddy caddy - -"
+    ];
     containers.chatroom-rs = {
       autoStart = true;
       hostAddress = cfg.hostAddress;
@@ -202,16 +208,12 @@ in
               ];
             };
           };
-          systemd.tmpfiles.rules = [
-            "d /crowdsec 0770 caddy caddy - -"
-            "d /crowdsec/data 0770 caddy caddy - -"
-            "d /crowdsec/config 0770 caddy caddy - -"
-          ];
+          # systemd.tmpfiles.rules = [
+          #   "d /crowdsec 0770 caddy caddy - -"
+          #   "d /crowdsec/data 0770 caddy caddy - -"
+          #   "d /crowdsec/config 0770 caddy caddy - -"
+          # ];
         };
     };
-    systemd.tmpfiles.rules = [
-      "d ${cfg.dataLocation}/mysql 0770 mysql mysql - -"
-      "d ${cfg.dataLocation}/crowdsec 0770 caddy caddy - -"
-    ];
   };
 }
