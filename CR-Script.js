@@ -1,4 +1,4 @@
-let ws = new WebSocket("ws://xxx.xxx.xxx.xxx:8080");
+let ws = new WebSocket("ws://192.168.192.237:8080");
 let current_roomid = "16";
 let message_count = 1;
 let current_username = "guest";
@@ -14,7 +14,7 @@ fetch("./EmojisMap.json")
 Notification.requestPermission();
 
 if (localStorage["token"] !== null) {
-    fetch("http://xxx.xxx.xxx.xxx:3000/protected", {
+    fetch("http://192.168.192.237:3000/protected", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -220,7 +220,7 @@ document.getElementById("login_button").addEventListener("click", () => {
     let usernameInput = document.getElementById("inputed_username").value.trim();
     let passwordInput = document.getElementById("inputed_password").value.trim();
     
-    const login_request = fetch("http://xxx.xxx.xxx.xxx:3000/login", {
+    const login_request = fetch("http://192.168.192.237:3000/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -284,10 +284,19 @@ document.getElementById("CR_login_button").addEventListener("click", () => {
     }
 });
 
+document.getElementById("new_user_container_a").addEventListener("click", function() {
+    document.getElementById("new_user_container_b").style.display = "block";
+    document.getElementById("new_user_container_a").style.display = "none";
+});
+
+document.getElementById("close_register").addEventListener("click", function() {
+    document.getElementById("new_user_container_b").style.display = "none";
+    document.getElementById("new_user_container_a").style.display = "block";
+});
 
 function connect() {
     if (ws.readyState === WebSocket.OPEN) ws.close();
-    ws = new WebSocket("ws://xxx.xxx.xxx.xxx:8080");
+    ws = new WebSocket("ws://192.168.192.237:8080");
 
     ws.onopen = () => {
         console.log("WebSocket connection established.");
