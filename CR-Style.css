@@ -160,3 +160,42 @@ body
 {
     color: red; 
 }
+#new_user_container_a 
+{
+    margin-left: auto;
+    padding: 2px;
+    text-align: center;
+}
+#new_user_container_b {
+    display: none;
+    margin-left: auto;
+    text-align: center;
+    position: relative; /* for absolute positioning of close button */
+}
+
+.register_inner {
+    position: relative;
+    display: inline-block;
+}
+
+#close_register {
+    position: absolute;
+    left: -20px;
+    width: 18px;
+    height: 18px;
+    line-height: 16px;
+
+    background-color: red;
+    color: white;
+
+    margin-top: 2px;
+
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    border-radius: 2px;
+}
+#close_register:hover {
+    cursor: pointer;
+    background-color: darkred;
+}
