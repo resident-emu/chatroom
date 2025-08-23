@@ -20,7 +20,7 @@ in
     #   description = "Path to the file containing your duckdns token";
     # };
     duckdnsToken = mkOption {
-      type = types.path;
+      type = types.str;
       description = "Your duckdns token";
     };
     dataLocation = mkOption {
@@ -61,10 +61,6 @@ in
       ephemeral = true;
 
       bindMounts = {
-        "/var/www/chatroom-rs" = {
-          hostPath = "${cfg.dataLocation}/chatroom-rs";
-          isReadOnly = false;
-        };
         "/var/lib/mysql" = {
           hostPath = "${cfg.dataLocation}/mysql";
           isReadOnly = false;
@@ -92,7 +88,7 @@ in
             serviceConfig = {
               Type = "simple";
               WorkingDirectory = "/var/www/chatroom-rs";
-              ExecStart = "${pkgs.cargo}/bin/cargo run";
+              ExecStart = "$${self.packages.${pkgs.system}.server}/bin/server";
               Restart = "no";
               Environment = "RUST_LOG=debug";
             };
@@ -214,9 +210,8 @@ in
         };
     };
     systemd.tmpfiles.rules = [
-      "d ${cfg.dataLocation}/mysql 0770 caddy caddy - -"
+      "d ${cfg.dataLocation}/mysql 0770 mysql mysql - -"
       "d ${cfg.dataLocation}/crowdsec 0770 caddy caddy - -"
-      "d ${cfg.dataLocation}/chatroom-rs 0770 caddy caddy - -"
     ];
   };
 }

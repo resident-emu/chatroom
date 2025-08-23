@@ -38,6 +38,7 @@
           cargoBuildOptions = [ "--release" ];
           cargoTestOptions = [ "--release" ];
         };
+        packages.default = self.packages.${system}.server;
       }
     )
     // {
