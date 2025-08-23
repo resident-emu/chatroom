@@ -11,7 +11,7 @@
     <div class="container" id="top_bar">
     <div id="user_login_container">
         <input class="login" type="text" id="inputed_username" placeholder="Username"><br>
-        <input class="login" type="password" placeholder="Password">
+        <input class="login" type="password" id="inputed_password" placeholder="Password"><br>
         <div class="ll_buttons_container">
             <div class="ll_buttons" id="login_button">user login</div>
             <div class="ll_buttons" id="logout_button">user logout</div>
@@ -29,8 +29,21 @@
      <div id="info_container">
         <div id="status">status : <span id="status_value">Not connected</span></div>
         <div id="roomid">room_id : --</div>
-        <div id="username">Username : anon</div>
+        <div id="username">Username : guest</div>
      </div>
+        <div id="new_user_container_a"><a> not a user? </a></div>
+        <div id="new_user_container_b">
+            <div class="register_inner">
+                <div id="close_register">×</div> <!-- small close box -->
+                <input class="login" type="text" id="new_username" placeholder="Username"><br>
+                <input class="login" type="password" id="new_password" placeholder="Password"><br>
+                <div class="ll_buttons_container">
+                    <div class="ll_buttons" id="register">register</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     </div>
 
     <div class="container" id="chatroom">
@@ -39,10 +52,9 @@
 
         <div class="foreign_message_container" id="foreign_message_container1">
             <div class="sender" id="sender">SYS</div>
-            <div class="message" id="message">This is a system test message</div>
+            <div class="message" id="message">default message</div>
             <div class="timestamp" id="timestamp">00:00</div>
         </div>
-
        </div>
         <div id="input_container">
             <input class="input" id="input_message" type="text" placeholder="...">
