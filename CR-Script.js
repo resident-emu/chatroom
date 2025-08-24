@@ -284,10 +284,19 @@ document.getElementById("CR_login_button").addEventListener("click", () => {
     }
 });
 
+document.getElementById("new_user_container_a").addEventListener("click", function() {
+    document.getElementById("new_user_container_b").style.display = "block";
+    document.getElementById("new_user_container_a").style.display = "none";
+});
+
+document.getElementById("close_register").addEventListener("click", function() {
+    document.getElementById("new_user_container_b").style.display = "none";
+    document.getElementById("new_user_container_a").style.display = "block";
+});
 
 function connect() {
     if (ws.readyState === WebSocket.OPEN) ws.close();
-    ws = new WebSocket("ws://xxx.xxx.xxx.xxx:8080");
+    ws = new WebSocket("ws://192.168.192.237:8080");
 
     ws.onopen = () => {
         console.log("WebSocket connection established.");
