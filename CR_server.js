@@ -79,7 +79,7 @@ app.use(express.json());
 app.use(cors({origin: '*'}));
 const SECRET_KEY = "your_secret_key"; // DO NOT USE "your_secret_key"
 
-app.post('/login', (req, res) => {
+app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     con.query("SELECT * FROM users WHERE name = ?", [username], (err, results) => {
         if (err) throw err;
@@ -93,7 +93,7 @@ app.post('/login', (req, res) => {
     });
 });
 
-app.get('/protected', (req, res) => {
+app.get('/api/protected', (req, res) => {
     const token = req.headers['authorization'];
     if (!token) {
         return res.status(403).json({ message: "No token provided" });

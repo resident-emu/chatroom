@@ -17,7 +17,7 @@ fetch("./EmojisMap.json")
 Notification.requestPermission();
 
 if (localStorage["token"] !== null) {
-    fetch("http://" + server_host + "/protected", {
+    fetch("http://" + server_host + "/api/protected", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -223,7 +223,7 @@ document.getElementById("login_button").addEventListener("click", () => {
     let usernameInput = document.getElementById("inputed_username").value.trim();
     let passwordInput = document.getElementById("inputed_password").value.trim();
     
-    const login_request = fetch("http://" + server_host + "/login", {
+    const login_request = fetch("http://" + server_host + "/api/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
