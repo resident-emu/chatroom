@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 axum = "0.8.4"
 bcrypt = "0.17.1"
+dotenv = "0.15.0"
 futures-channel = "0.3.31"
 futures-util = "0.3.31"
 jsonwebtoken = "9.3.1"
