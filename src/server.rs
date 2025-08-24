@@ -38,6 +38,8 @@ pub mod sockets {
     use mysql::prelude::*;
     use bcrypt::verify;
 
+    use dotenv::dotenv;
+
 
     // Custom types for the websocket, stolen from the example
     type Tx = UnboundedSender<Message>;
@@ -72,13 +74,6 @@ pub mod sockets {
 
     // Clients and for now also the secrets
     static CLIENT_ID: AtomicU32 = AtomicU32::new(1);
-    static SECRET_KEY: &str = "your_secret_key";
-
-    static DB_HOST: &str = "127.0.0.1";
-    static DB_PORT: &str = "6969";
-    static DB_USER: &str = "osmo";
-    static DB_PASSWORD: &str = "osmo";
-    static DB_DB: &str = "chatroom";
 
     // This little guy handles each incoming websocket connection
     async fn handle_connection(clients: Clients, raw_stream: TcpStream, addr: SocketAddr) {
@@ -224,12 +219,18 @@ pub mod sockets {
         let cors = [("Access-Control-Allow-Origin", "*"),
                     ("Access-Control-Allow-Headers", "authorization, content-type")];
         // Database connection information built from the secrets
+        let db_host= dotenv::var("DB_HOST").unwrap();
+        let db_port = dotenv::var("DB_PORT").unwrap();
+        let db_user = dotenv::var("DB_USER").unwrap();
+        let db_password = dotenv::var("DB_PASSWORD").unwrap();
+        let db_db = dotenv::var("DB_DB").unwrap();
+
         let opts = OptsBuilder::new()
-            .ip_or_hostname(Some(DB_HOST))
-            .tcp_port(DB_PORT.parse().unwrap_or(6969))
-            .user(Some(DB_USER))
-            .pass(Some(DB_PASSWORD))
-            .db_name(Some(DB_DB));
+            .ip_or_hostname(Some(db_host))
+            .tcp_port(db_port.parse().unwrap_or(6969))
+            .user(Some(db_user))
+            .pass(Some(db_password))
+            .db_name(Some(db_db));
 
         // Extract the stuff we need from the payload
         let username = payload
@@ -282,6 +283,7 @@ pub mod sockets {
                         params! { "username" => &username })
             .unwrap_or(None);
 
+        let secret_key = dotenv::var("SECRET_KEY").unwrap();
         match result {
             // If it does, check against password hash and return the jwt
             Some((name, hash)) => {
@@ -292,7 +294,7 @@ pub mod sockets {
                     let token = encode(
                         &Header::default(),
                         &jwt,
-                        &jsonwebtoken::EncodingKey::from_secret(SECRET_KEY.as_bytes()),
+                        &jsonwebtoken::EncodingKey::from_secret(secret_key.as_bytes()),
                     ).unwrap();
 
                     return (
@@ -326,7 +328,7 @@ pub mod sockets {
                                 let token = encode(
                                     &Header::default(),
                                     &jwt,
-                                    &jsonwebtoken::EncodingKey::from_secret(SECRET_KEY.as_bytes()),
+                                    &jsonwebtoken::EncodingKey::from_secret(secret_key.as_bytes()),
                                 ).unwrap();
 
                                 return (
@@ -371,9 +373,10 @@ pub mod sockets {
         validation.validate_exp = false;
         validation.required_spec_claims.clear();
         
+        let secret_key = dotenv::var("SECRET_KEY").unwrap();
         let token_data: jsonwebtoken::TokenData<Jwt> = match decode::<Jwt>(
             token.trim(),
-            &DecodingKey::from_secret(SECRET_KEY.as_bytes()),
+            &DecodingKey::from_secret(secret_key.as_bytes()),
             &validation,
         ) {
             Ok(data) => data,
@@ -414,9 +417,10 @@ pub mod sockets {
     // The main function responsible for running both the axum and tungstenite endpoints
     #[tokio::main]
     pub async fn main() -> Result<(), IoError> {
+        dotenv::dotenv().ok();
         let app = Router::new()
-            .route("/api/login", post(login).options(cors_preflight))
-            .route("/api/protected", get(protected).options(cors_preflight));
+            .route("/login", post(login).options(cors_preflight))
+            .route("/protected", get(protected).options(cors_preflight));
 
         let bind_location = "127.0.0.1:3100";
         let axum_listener = TcpListener::bind(bind_location).await?;
