@@ -292,7 +292,7 @@ pub mod sockets {
                     let token = encode(
                         &Header::default(),
                         &jwt,
-                        &jsonwebtoken::EncodingKey::from_secret(SECRET_KEY.as_ref()),
+                        &jsonwebtoken::EncodingKey::from_secret(SECRET_KEY.as_bytes()),
                     ).unwrap();
 
                     return (
@@ -326,7 +326,7 @@ pub mod sockets {
                                 let token = encode(
                                     &Header::default(),
                                     &jwt,
-                                    &jsonwebtoken::EncodingKey::from_secret(SECRET_KEY.as_ref()),
+                                    &jsonwebtoken::EncodingKey::from_secret(SECRET_KEY.as_bytes()),
                                 ).unwrap();
 
                                 return (
@@ -367,18 +367,21 @@ pub mod sockets {
                 Json(json!({ "Message": "No token provided, also this propably should not have happened" })),
             );
         }
-
+        let mut validation = Validation::new(Algorithm::HS256);
+        validation.validate_exp = false;
+        validation.required_spec_claims.clear();
+        
         let token_data: jsonwebtoken::TokenData<Jwt> = match decode::<Jwt>(
             token.trim(),
-            &DecodingKey::from_secret(SECRET_KEY.as_ref()),
-            &Validation::new(Algorithm::HS256),
+            &DecodingKey::from_secret(SECRET_KEY.as_bytes()),
+            &validation,
         ) {
             Ok(data) => data,
-            Err(_) => {
+            Err(e) => {
                 return (
                     StatusCode::UNAUTHORIZED,
                     cors,
-                    Json(json!({ "Message": "Token invalid" })),
+                    Json(json!({ "Message": format!("Token invalid: {:?}", e) })),
                 );
             }
         };
@@ -390,7 +393,7 @@ pub mod sockets {
             cors,
             Json(json!({
                 "message": "Protected data",
-                "user": username
+                "user": { "username": username }
             })),
         )
     }
@@ -412,8 +415,8 @@ pub mod sockets {
     #[tokio::main]
     pub async fn main() -> Result<(), IoError> {
         let app = Router::new()
-            .route("/login", post(login).options(cors_preflight))
-            .route("/protected", get(protected).options(cors_preflight));
+            .route("/api/login", post(login).options(cors_preflight))
+            .route("/api/protected", get(protected).options(cors_preflight));
 
         let bind_location = "127.0.0.1:3100";
         let axum_listener = TcpListener::bind(bind_location).await?;

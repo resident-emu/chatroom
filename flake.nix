@@ -27,8 +27,8 @@
           ];
         };
 
-        packages.server = pkgs.rustPlatform.buildRustPackage {
-          pname = "server";
+        packages.chatroom = pkgs.rustPlatform.buildRustPackage {
+          pname = "chatroom";
           version = "0.1.0";
           src = ./.;
 
@@ -38,10 +38,22 @@
           cargoBuildOptions = [ "--release" ];
           cargoTestOptions = [ "--release" ];
         };
-        packages.default = self.packages.${system}.server;
+        packages.default = self.packages.${system}.chatroom;
       }
     )
     // {
-      nixosModules.default = import ./module.nix;
+      nixosModules.default =
+        {
+          config,
+          pkgs,
+          lib,
+          ...
+        }:
+        import ./module.nix {
+          inherit config pkgs lib;
+          self = self;
+          system = pkgs.system;
+        };
+
     };
 }
