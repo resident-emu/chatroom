@@ -1,4 +1,7 @@
-let ws = new WebSocket("ws://127.0.0.1:8080");
+let websocket_host = "xxx.xxx.xxx.xxx:8080";
+let server_host = "xxx.xxx.xxx.xxx:3000";
+
+let ws = new WebSocket("ws://" + websocket_host);
 let current_roomid = "16";
 let message_count = 1;
 let current_username = "guest";
@@ -13,8 +16,8 @@ fetch("./EmojisMap.json")
 
 Notification.requestPermission();
 
-if (localStorage["token"] !== null) {
-    fetch("http://127.0.0.1:3100/protected", {
+if (localStorage["token"] !== "unidentified") {
+    fetch("http://" + server_host + "/api/protected", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -176,10 +179,13 @@ function add_foreign_message(message, sender = "SYS") {
 
     message_count++;
     console.log({ Sender: sender, message, timestamp: timeStr });
-    if (Notification.permission === 'granted') {
+    if (Notification.permission === 'granted' || document.hidden) {
         new Notification("new message from: " + sender, {
             body: message,
         });
+    }
+    if (document.hidden) {
+        document.getElementById("title").innerText = "New Message!"
     }
 }
 
@@ -219,8 +225,8 @@ document.getElementById("input_message").addEventListener("keydown", (event) => 
 document.getElementById("login_button").addEventListener("click", () => {
     let usernameInput = document.getElementById("inputed_username").value.trim();
     let passwordInput = document.getElementById("inputed_password").value.trim();
-
-    const login_request = fetch("http://127.0.0.1:3100/login", {
+    
+    const login_request = fetch("http://" + server_host + "/api/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -289,14 +295,53 @@ document.getElementById("new_user_container_a").addEventListener("click", functi
     document.getElementById("new_user_container_a").style.display = "none";
 });
 
+document.getElementById("register").addEventListener("click", function() {
+    let new_username = document.getElementById("new_username").value.trim();
+    let new_password = document.getElementById("new_password").value.trim();
+    if (!new_username || !new_password) {
+        alert("Username and password cannot be empty.");
+        return;
+    }
+    fetch("http://" + server_host + "/api/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username: new_username, password: new_password })
+    })
+    .then(response => {
+        if (response.ok) {
+            alert("Registration successful!");
+            document.getElementById("new_username").value = "";
+            document.getElementById("new_password").value = "";
+            document.getElementById("new_user_container_b").style.display = "none";
+            document.getElementById("new_user_container_a").style.display = "block"
+        } else {
+            if (response.status = 400) {
+                alert("user already exists")
+            }
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+
+});
+
 document.getElementById("close_register").addEventListener("click", function() {
     document.getElementById("new_user_container_b").style.display = "none";
     document.getElementById("new_user_container_a").style.display = "block";
 });
 
+document.addEventListener("visibilitychange", function() {
+    if (!document.hidden) {
+        document.getElementById("title").innerText = "chatroom"
+    }
+})
+
 function connect() {
     if (ws.readyState === WebSocket.OPEN) ws.close();
-    ws = new WebSocket("ws://192.168.192.237:8080");
+    ws = new WebSocket("ws://" + websocket_host);
 
     ws.onopen = () => {
         console.log("WebSocket connection established.");
@@ -315,3 +360,4 @@ function connect() {
         document.getElementById("status_value").style.color = "red";
     };
 }
+

@@ -9,10 +9,10 @@ const wss = new WebSocket.Server({ port: 8080});
 let clients = [];
 
 let con = mysql.createConnection({
-  host: "dbip", // if not using format ip:port only host needed
-  port: dbport,
+  host: "ip",
+  port: port,
   user: "dbuser",
-  password: "dbuser",
+  password: "dbpwd",
   database: "db"
 });
 
@@ -77,9 +77,9 @@ const app = express();
 
 app.use(express.json());
 app.use(cors({origin: '*'}));
-const SECRET_KEY = "your_secret_key"; // DO NOT USE "your_secret_key"
+const SECRET_KEY = "your_secret_key";
 
-app.post('/login', (req, res) => {
+app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     con.query("SELECT * FROM users WHERE name = ?", [username], (err, results) => {
         if (err) throw err;
@@ -93,7 +93,7 @@ app.post('/login', (req, res) => {
     });
 });
 
-app.get('/protected', (req, res) => {
+app.get('/api/protected', (req, res) => {
     const token = req.headers['authorization'];
     if (!token) {
         return res.status(403).json({ message: "No token provided" });
@@ -104,6 +104,28 @@ app.get('/protected', (req, res) => {
         }
         res.json({ message: "Protected data", user: decoded });
     });
+});
+app.post('/api/register', (req, res) => {
+    const { username, password } = req.body;
+
+     con.query("SELECT * FROM users WHERE name = ?", [username], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (results.length > 0) {
+            return res.status(400).json({ message: "User already exists" });
+        }
+
+    const hashedPassword = bcrypt.hashSync(password, 12);
+    con.query("INSERT INTO users (name, hash) VALUES (?, ?)", [username, hashedPassword], (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: "Error registering user" });
+        }
+        res.status(201).json({ message: "User registered successfully" });
+    });
+});
 });
 app.listen(3000, () => {
     console.log("Server is running on port 3000");

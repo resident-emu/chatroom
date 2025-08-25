@@ -171,6 +171,8 @@ body
     margin-left: auto;
     text-align: center;
     position: relative; /* for absolute positioning of close button */
+
+    border-left: 2px double black;
 }
 
 .register_inner {
@@ -180,13 +182,14 @@ body
 
 #close_register {
     position: absolute;
-    left: -20px;
+    left: -23px;
     width: 18px;
     height: 18px;
     line-height: 16px;
 
-    background-color: red;
-    color: white;
+    background-color: white;
+    color: black;
+    border: 1px solid black;
 
     margin-top: 2px;
 
@@ -197,5 +200,11 @@ body
 }
 #close_register:hover {
     cursor: pointer;
-    background-color: darkred;
+    background-color: gray;
+    color: white;
+}
+#new_user_container_a a 
+{
+    color: blue;
+    text-decoration: underline;
 }
