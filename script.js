@@ -1,4 +1,7 @@
-let ws = new WebSocket("ws://192.168.192.237:8080");
+let websocket_host = "127.0.0.1:8080";
+let server_host = "127.0.0.1:3000";
+
+let ws = new WebSocket("ws://" + websocket_host);
 let current_roomid = "16";
 let message_count = 1;
 let current_username = "guest";
@@ -14,7 +17,7 @@ fetch("./EmojisMap.json")
 Notification.requestPermission();
 
 if (localStorage["token"] !== null) {
-    fetch("http://192.168.192.237:3000/protected", {
+    fetch("http://" + server_host + "/api/protected", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -220,7 +223,7 @@ document.getElementById("login_button").addEventListener("click", () => {
     let usernameInput = document.getElementById("inputed_username").value.trim();
     let passwordInput = document.getElementById("inputed_password").value.trim();
     
-    const login_request = fetch("http://192.168.192.237:3000/login", {
+    const login_request = fetch("http://" + server_host + "/api/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -296,7 +299,7 @@ document.getElementById("close_register").addEventListener("click", function() {
 
 function connect() {
     if (ws.readyState === WebSocket.OPEN) ws.close();
-    ws = new WebSocket("ws://192.168.192.237:8080");
+    ws = new WebSocket("ws://" + websocket_host);
 
     ws.onopen = () => {
         console.log("WebSocket connection established.");
