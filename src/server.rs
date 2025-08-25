@@ -213,7 +213,7 @@ pub mod sockets {
         }
     }
 
-    // The axum /login endpoint (also functions as register)
+    // The axum /login endpoint
     async fn login(Json(payload): Json<Value>) -> impl IntoResponse {
         // Cors is a pain in the ass but have to give these in the header for the browser
         let cors = [("Access-Control-Allow-Origin", "*"),
@@ -305,6 +305,98 @@ pub mod sockets {
                 }
             },
             // If it didn't find the user, make one
+            None => { return (
+                        StatusCode::FORBIDDEN,
+                        cors,
+                        Json(json!({ "message": "User does not exist, create one using register" })),
+                    )},
+        }
+
+        // This is required for syntax, however this should not be possible to reach
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            cors,
+            Json(json!({ "message": "This should not be reached" })),
+        )
+    }
+    // The axum /register endpoint
+    async fn register(Json(payload): Json<Value>) -> impl IntoResponse {
+        // Cors is a pain in the ass but have to give these in the header for the browser
+        let cors = [("Access-Control-Allow-Origin", "*"),
+                    ("Access-Control-Allow-Headers", "authorization, content-type")];
+        // Database connection information built from the secrets
+        let db_host= dotenv::var("DB_HOST").unwrap();
+        let db_port = dotenv::var("DB_PORT").unwrap();
+        let db_user = dotenv::var("DB_USER").unwrap();
+        let db_password = dotenv::var("DB_PASSWORD").unwrap();
+        let db_db = dotenv::var("DB_DB").unwrap();
+
+        let opts = OptsBuilder::new()
+            .ip_or_hostname(Some(db_host))
+            .tcp_port(db_port.parse().unwrap_or(6969))
+            .user(Some(db_user))
+            .pass(Some(db_password))
+            .db_name(Some(db_db));
+
+        // Extract the stuff we need from the payload
+        let username = payload
+            .get("username")
+            .and_then(|u| u.as_str())
+            .unwrap_or("")
+            .trim()
+            .to_string();
+        let password = payload
+            .get("password")
+            .and_then(|p| p.as_str())
+            .unwrap_or("")
+            .trim()
+            .to_string();
+
+        // If either are empty, return
+        if username.is_empty() || password.is_empty() {
+            return (
+                StatusCode::BAD_REQUEST,
+                cors,
+                Json(json!({ "message": "Username or password missing" })),
+            );
+        };
+
+        // Make a database connection
+        let pool = match Pool::new(opts) {
+            Ok(p) => p,
+            Err(_) => {
+                return (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    cors,
+                    Json(json!({ "message": "DB connection failed" })),
+                )
+            }
+        };
+        let mut conn = match pool.get_conn() {
+            Ok(c) => c,
+            Err(_) => {
+                return (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    cors,
+                    Json(json!({ "message": "Failed to get DB connection" })),
+                )
+            }
+        };
+
+        // Check if the user exists in the database
+        let result: Option<(String, String)> = conn
+            .exec_first("SELECT name, hash FROM users WHERE name = :username",
+                        params! { "username" => &username })
+            .unwrap_or(None);
+
+        let secret_key = dotenv::var("SECRET_KEY").unwrap();
+        match result {
+            Some((_name, _hash)) => { return (
+                        StatusCode::FORBIDDEN,
+                        cors,
+                        Json(json!({ "message": "User does not exist, create one using register" })),
+                    )},
+            // If it didn't find the user, make one
             None => {
                 let hash = match bcrypt::hash(password, 10) {
                     Ok(h) => h,
@@ -344,13 +436,6 @@ pub mod sockets {
                 }
             },
         }
-
-        // This is required for syntax, however this should not be possible to reach
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            cors,
-            Json(json!({ "message": "This should not be reached" })),
-        )
     }
 
     // The axum /protected endpoint for who knows what (prolly just cheking that the token is correct, I just translated this)
@@ -419,8 +504,9 @@ pub mod sockets {
     pub async fn main() -> Result<(), IoError> {
         dotenv::dotenv().ok();
         let app = Router::new()
-            .route("/login", post(login).options(cors_preflight))
-            .route("/protected", get(protected).options(cors_preflight));
+            .route("/api/login", post(login).options(cors_preflight))
+            .route("/api/register", post(register).options(cors_preflight))
+            .route("/api/protected", get(protected).options(cors_preflight));
 
         let bind_location = "127.0.0.1:3100";
         let axum_listener = TcpListener::bind(bind_location).await?;
