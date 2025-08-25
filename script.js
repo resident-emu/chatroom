@@ -302,6 +302,29 @@ document.getElementById("register").addEventListener("click", function() {
         alert("Username and password cannot be empty.");
         return;
     }
+    fetch("http://" + server_host + "/api/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username: new_username, password: new_password })
+    })
+    .then(response => {
+        if (response.ok) {
+            alert("Registration successful!");
+            document.getElementById("new_username").value = "";
+            document.getElementById("new_password").value = "";
+            document.getElementById("new_user_container_b").style.display = "none";
+            document.getElementById("new_user_container_a").style.display = "block"
+        } else {
+            if (response.status = 400) {
+                alert("user already exists")
+            }
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
 
 });
 
