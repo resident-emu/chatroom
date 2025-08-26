@@ -15,31 +15,36 @@ fetch("./EmojisMap.json")
 
 
 Notification.requestPermission();
-
-if (localStorage["token"] !== "unidentified") {
+if (localStorage.getItem("token")) {
     fetch("http://" + server_host + "/api/protected", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": localStorage["token"]
-}
-})
-  .then(response => response.json())
-  .then(data => {
-    current_username = data.user.username;
-    document.getElementById("username").innerText = "Username : " + data.user.username;
-    document.getElementById("login_button").disabled = true;
-    document.getElementById("login_button").style = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
-    document.getElementById("logout_button").style = "pointer-events: auto; opacity: 1; cursor: auto;";
-    document.getElementById("logout_button").disabled = false;
+            "Authorization": localStorage.getItem("token")
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        current_username = data.user.username;
+        document.getElementById("username").innerText = "Username : " + current_username;
 
-  })
-  .catch(error => {
-    console.error("Error:", error);
-  });
-}
-else {
-    localStorage["token"] = null;
+        // Update buttons
+        const loginBtn = document.getElementById("login_button");
+        const logoutBtn = document.getElementById("logout_button");
+
+        loginBtn.disabled = true;
+        loginBtn.style.cssText = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
+
+        logoutBtn.disabled = false;
+        logoutBtn.style.cssText = "pointer-events: auto; opacity: 1; cursor: auto;";
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        localStorage.removeItem("token"); // clear invalid token
+    });
+} else {
+    console.log("User not logged in");
+    document.getElementById("user_del").style.display = "none";
 }
 
 function parseJwt (token) {
@@ -64,6 +69,7 @@ ws.onopen = function () {
     console.log("WebSocket connection established.");
     document.getElementById("status_value").innerText="WebSocket connected";
     document.getElementById("status_value").style.color = "green";
+    document.getElementById("reconnect").style.display = "none";
 
     if (ws.readyState === WebSocket.OPEN) {
         //ws.send(JSON.stringify({ text: "", sender: current_username, roomid: current_roomid, token: localStorage["token"] }));
@@ -75,11 +81,12 @@ ws.onmessage = function (event) {
     const data = JSON.parse(event.data);
     add_foreign_message(data.text, data.sender);
 };
-
 ws.onclose = function () {
     document.getElementById("status_value").innerText = "Not connected";
     document.getElementById("status_value").style.color = "red";
     document.getElementById("roomid").innerText = "room_id : --";
+
+    document.getElementById("reconnect").style.display = "inline-block";
 };
 
 // --- Message Functions ---
@@ -115,8 +122,9 @@ function add_message(message, sender = current_username) {
         const img = document.createElement("img");
         img.src = message;
         img.alt = "shared image";
-        img.style.maxWidth = "200px";
-        img.style.maxHeight = "200px";
+        img.style.maxWidth = "300px";
+        img.style.maxHeight = "300px";
+        img.style.paddingTop = "5px";
         messageDiv.appendChild(img);
     } else {
         messageDiv.innerText = ConvertToEmoji(message);
@@ -158,10 +166,21 @@ function add_foreign_message(message, sender = "SYS") {
         const img = document.createElement("img");
         img.src = message;
         img.alt = "shared image";
-        img.style.maxWidth = "200px";
-        img.style.maxHeight = "200px";
+        img.style.maxWidth = "300px";
+        img.style.maxHeight = "300px";
+        img.style.paddingTop = "5px";
         messageDiv.appendChild(img);
-    } else {
+    }else {
+        if (message.includes("@" + current_username))
+        {
+                if (Notification.permission === 'granted' || document.hidden) {
+                    new Notification("new mention from: " + sender, {
+                        body: message,
+                    });
+                }
+
+
+        }
         messageDiv.innerText = ConvertToEmoji(message);
     }
 
@@ -179,11 +198,6 @@ function add_foreign_message(message, sender = "SYS") {
 
     message_count++;
     console.log({ Sender: sender, message, timestamp: timeStr });
-    if (Notification.permission === 'granted' || document.hidden) {
-        new Notification("new message from: " + sender, {
-            body: message,
-        });
-    }
     if (document.hidden) {
         document.getElementById("title").innerText = "New Message!"
     }
@@ -256,6 +270,7 @@ document.getElementById("login_button").addEventListener("click", () => {
         document.getElementById("login_button").style = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
 
         document.getElementById("username").innerText = "Username : " + usernameInput;
+        document.getElementById("user_del").style.display = "block";
         current_username = usernameInput;
         if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ text: "", sender: current_username, roomid: current_roomid, token: localStorage["token"] }));
@@ -270,7 +285,7 @@ document.getElementById("logout_button").addEventListener("click", () => {
     localStorage.removeItem("token");
     current_username = "guest";
     document.getElementById("username").innerText = "Username : " + current_username;
-
+    document.getElementById("user_del").style.display = "none";
     document.getElementById("login_button").disabled = false;
     document.getElementById("logout_button").disabled = true;
     document.getElementById("logout_button").style = "pointer-events: none; opacity: 0.5; cursor: not-allowed;";
@@ -338,7 +353,59 @@ document.addEventListener("visibilitychange", function() {
         document.getElementById("title").innerText = "chatroom"
     }
 })
+document.getElementById("user_del").addEventListener("click", async function() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert("You are not logged in.");
+        return;
+    }
 
+    try {
+        const userResponse = await fetch(`http://${server_host}/api/protected`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token
+            }
+        });
+
+        if (!userResponse.ok) throw new Error("Failed to fetch user info.");
+
+        const userData = await userResponse.json();
+        const username = userData.user.username;
+
+        
+        if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
+            return;
+        }
+        const deleteResponse = await fetch(`http://${server_host}/api/delete`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({ username })
+        });
+
+        if (deleteResponse.ok) {
+            alert("User deleted successfully!");
+            localStorage.removeItem("token");
+            location.reload();
+        } else {
+            const errText = await deleteResponse.text();
+            alert("Error deleting user: " + errText);
+        }
+
+    } catch (error) {
+        console.error("Error:", error);
+        localStorage.removeItem("token");
+        alert("An error occurred. Please log in again.");
+        location.reload();
+    }
+});
+document.getElementById("reconnect").addEventListener("click", function() {
+    connect();
+});
 function connect() {
     if (ws.readyState === WebSocket.OPEN) ws.close();
     ws = new WebSocket("ws://" + websocket_host);
@@ -348,6 +415,8 @@ function connect() {
         document.getElementById("status_value").innerText = "WebSocket connected";
         document.getElementById("roomid").innerText = "room_id : " + current_roomid;
         document.getElementById("status_value").style.color = "green";
+
+        document.getElementById("reconnect").style.display = "none";
     };
 
     ws.onmessage = (event) => {
@@ -358,6 +427,9 @@ function connect() {
     ws.onclose = () => {
         document.getElementById("status_value").innerText = "Not connected";
         document.getElementById("status_value").style.color = "red";
+        document.getElementById("roomid").innerText = "room_id : --";
+
+        document.getElementById("reconnect").style.display = "inline-block";
     };
 }
 

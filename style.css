@@ -102,6 +102,7 @@ body
 {
     font-size: 10px;
     font-weight: bold;
+    padding-left: 2px;
 }
 .timestamp
 {
@@ -160,6 +161,12 @@ body
 {
     color: red; 
 }
+#info_container > div
+{
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 2px;
+}
 #new_user_container_a 
 {
     margin-left: auto;
@@ -207,4 +214,39 @@ body
 {
     color: blue;
     text-decoration: underline;
+}
+#new_user_container_a a:hover
+{
+    cursor: pointer;
+}
+.message
+{
+    padding-left: 3px;
+}
+#user_del
+{
+    background-color: red;
+    color: white;
+    border-radius: 2px;
+    max-width: 50%;
+}
+#user_del:hover
+{
+    background-color: darkred;
+    color: lightgray;
+}
+#reconnect
+{
+    border: 1px solid black;
+    margin: 2px;
+    padding: 1px 2px;
+    background-color: white;
+    border-radius: 2px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+#reconnect:hover
+{
+    cursor: pointer;
+    background-color: lightgray;
 }
