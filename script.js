@@ -20,7 +20,7 @@ if (localStorage.getItem("token")) {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + localStorage.getItem("token")
+            "Authorization": localStorage.getItem("token")
         }
     })
     .then(response => response.json())
@@ -69,6 +69,7 @@ ws.onopen = function () {
     console.log("WebSocket connection established.");
     document.getElementById("status_value").innerText="WebSocket connected";
     document.getElementById("status_value").style.color = "green";
+    document.getElementById("reconnect").style.display = "none";
 
     if (ws.readyState === WebSocket.OPEN) {
         //ws.send(JSON.stringify({ text: "", sender: current_username, roomid: current_roomid, token: localStorage["token"] }));
@@ -80,11 +81,12 @@ ws.onmessage = function (event) {
     const data = JSON.parse(event.data);
     add_foreign_message(data.text, data.sender);
 };
-
 ws.onclose = function () {
     document.getElementById("status_value").innerText = "Not connected";
     document.getElementById("status_value").style.color = "red";
     document.getElementById("roomid").innerText = "room_id : --";
+
+    document.getElementById("reconnect").style.display = "inline-block";
 };
 
 // --- Message Functions ---
@@ -401,6 +403,9 @@ document.getElementById("user_del").addEventListener("click", async function() {
         location.reload();
     }
 });
+document.getElementById("reconnect").addEventListener("click", function() {
+    connect();
+});
 function connect() {
     if (ws.readyState === WebSocket.OPEN) ws.close();
     ws = new WebSocket("ws://" + websocket_host);
@@ -410,6 +415,8 @@ function connect() {
         document.getElementById("status_value").innerText = "WebSocket connected";
         document.getElementById("roomid").innerText = "room_id : " + current_roomid;
         document.getElementById("status_value").style.color = "green";
+
+        document.getElementById("reconnect").style.display = "none";
     };
 
     ws.onmessage = (event) => {
@@ -420,5 +427,9 @@ function connect() {
     ws.onclose = () => {
         document.getElementById("status_value").innerText = "Not connected";
         document.getElementById("status_value").style.color = "red";
+        document.getElementById("roomid").innerText = "room_id : --";
+
+        document.getElementById("reconnect").style.display = "inline-block";
     };
 }
+
