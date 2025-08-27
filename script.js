@@ -1,7 +1,7 @@
 let websocket_host = "xxx.xxx.xxx.xxx:8080";
 let server_host = "xxx.xxx.xxx.xxx:3000";
 
-let ws = new WebSocket("ws://" + websocket_host);
+let ws = new WebSocket(`ws://${websocket_host}`);
 let current_roomid = "16";
 let message_count = 1;
 let current_username = "guest";
@@ -16,7 +16,7 @@ fetch("./EmojisMap.json")
 
 Notification.requestPermission();
 if (localStorage.getItem("token")) {
-    fetch("http://" + server_host + "/api/protected", {
+    fetch(`http://${server_host}/api/protected`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -55,6 +55,22 @@ function parseJwt (token) {
     }).join(''));
 
     return JSON.parse(jsonPayload);
+}
+
+function favicon_ping() {
+    setTimeout(() => {
+        let flashing = setInterval(() => {
+            if (document.hidden) {
+                const favicon = document.getElementById("favicon");
+                favicon.href = favicon.href.endsWith("red_square.png")
+                    ? "green_square.png"
+                    : "red_square.png";
+            } else {
+                clearInterval(flashing);
+                document.getElementById("favicon").href = "none.ico";
+            }
+        }, 500);
+    }, 100); 
 }
 
 // Disable logout buttons initially
@@ -178,6 +194,7 @@ function add_foreign_message(message, sender = "SYS") {
                         body: message,
                     });
                 }
+                favicon_ping();
 
 
         }
@@ -239,8 +256,8 @@ document.getElementById("input_message").addEventListener("keydown", (event) => 
 document.getElementById("login_button").addEventListener("click", () => {
     let usernameInput = document.getElementById("inputed_username").value.trim();
     let passwordInput = document.getElementById("inputed_password").value.trim();
-    
-    const login_request = fetch("http://" + server_host + "/api/login", {
+
+    const login_request = fetch(`http://${server_host}/api/login`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -407,6 +424,10 @@ document.getElementById("reconnect").addEventListener("click", function() {
     connect();
 });
 function connect() {
+    document.getElementById("status_value").style.color = "orange";
+    document.getElementById("status_value").innerText = "Connecting...";
+    document.getElementById("reconnect").disabled = true;
+    
     if (ws.readyState === WebSocket.OPEN) ws.close();
     ws = new WebSocket("ws://" + websocket_host);
 
