@@ -225,15 +225,15 @@ body
 }
 #user_del
 {
-    background-color: red;
-    color: white;
+    color: black;
     border-radius: 2px;
-    max-width: 50%;
+    max-width: 75%;
+    display: none;
 }
 #user_del:hover
 {
-    background-color: darkred;
-    color: lightgray;
+    background-color: red; 
+    color: white;
 }
 #reconnect
 {
