@@ -382,7 +382,7 @@ document.getElementById("user_del").addEventListener("click", async function() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
+                "Authorization": token
             },
             body: JSON.stringify({ username })
         });
