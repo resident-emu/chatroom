@@ -11,7 +11,7 @@ fetch("./EmojisMap.json")
   .then(res => res.json())
   .then(data => {
     emojimap = data;
-  });
+});
 
 
 Notification.requestPermission();
@@ -170,36 +170,37 @@ function add_foreign_message(message, sender = "SYS") {
 
     let container = document.createElement("div");
     container.id = "foreign_message_container" + message_count;
-    container.className = "foreign_message_container";
 
     let senderDiv = document.createElement("div");
     senderDiv.className = "sender";
     senderDiv.innerText = sender;
 
     let messageDiv = document.createElement("div");
-    messageDiv.className = "message";
     if (/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i.test(message)) {
-        const img = document.createElement("img");
-        img.src = message;
-        img.alt = "shared image";
-        img.style.maxWidth = "300px";
-        img.style.maxHeight = "300px";
-        img.style.paddingTop = "5px";
-        messageDiv.appendChild(img);
-    }else {
-        if (message.includes("@" + current_username))
-        {
-                if (Notification.permission === 'granted' || document.hidden) {
-                    new Notification("new mention from: " + sender, {
-                        body: message,
-                    });
-                }
-                favicon_ping();
+    const img = document.createElement("img");
+    img.src = message;
+    img.alt = "shared image";
+    img.style.maxWidth = "300px";
+    img.style.maxHeight = "300px";
+    img.style.paddingTop = "5px";
+    messageDiv.appendChild(img);
 
-
+    container.className = "foreign_message_container";
+    } else if (message.includes("@" + current_username) && current_username !== "guest") {
+        if (Notification.permission === 'granted' || document.hidden) {
+            new Notification("new mention from: " + sender, {
+                body: message,
+        });
         }
-        messageDiv.innerText = ConvertToEmoji(message);
-    }
+        favicon_ping();
+        container.className = "foreign_message_mention_container";
+        messageDiv.innerText = message;
+        messageDiv.className = "message_mention";
+        } else {
+            container.className = "foreign_message_container";
+            messageDiv.className = "message";
+            messageDiv.innerText = message;
+        }
 
     let timestampDiv = document.createElement("div");
     timestampDiv.className = "timestamp";
@@ -432,6 +433,7 @@ function connect() {
     ws = new WebSocket("ws://" + websocket_host);
 
     ws.onopen = () => {
+        ws.send(JSON.stringify({ text: "", sender: current_username, roomid: current_roomid, token: localStorage["token"] }));
         console.log("WebSocket connection established.");
         document.getElementById("status_value").innerText = "WebSocket connected";
         document.getElementById("roomid").innerText = "room_id : " + current_roomid;
